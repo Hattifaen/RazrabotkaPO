@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация / Вход | Application</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.85);
+            --border: rgba(148, 163, 184, 0.2);
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --text: #e2e8f0;
+            --text-muted: #94a3b8;
+            --input-bg: rgba(15, 23, 42, 0.6);
+            --radius: 12px;
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: radial-gradient(circle at 50% 0%, #1e293b 0%, #0f172a 100%);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .auth-container {
+            width: 100%;
+            max-width: 480px;
+        }
+
+        .auth-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(12px);
+            overflow: hidden;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            background: rgba(15, 23, 42, 0.5);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 16px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+        }
+
+        .tab.active {
+            color: #ffffff;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 20%; right: 20%;
+            height: 2px;
+            background: var(--primary);
+            border-radius: 2px;
+        }
+
+        /* Forms */
+        .form-container { padding: 24px; }
+        .form { display: none; animation: fadeIn 0.4s ease; }
+        .form.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group { margin-bottom: 18px; }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 12px 14px;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 0.95rem;
+            transition: 0.2s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 8px;
+        }
+
+        .btn:hover { background: var(--primary-hover); transform: translateY(-1px); }
+        .btn:active { transform: translateY(0); }
+
+        /* Application State Preview */
+        .app-preview {
+            margin-top: 24px;
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px dashed var(--border);
+            border-radius: 8px;
+            padding: 14px;
+            font-family: 'Consolas', monospace;
+            font-size: 0.8rem;
+        }
+
+        .app-preview h4 {
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .attr-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+            padding-bottom: 4px;
+        }
+
+        .attr-key { color: #64748b; }
+        .attr-val { color: #38bdf8; }
+
+        .status-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .status-draft { background: rgba(107, 114, 128, 0.2); color: #9ca3af; }
+        .status-validating { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+        .status-pending { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+        .status-error { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+
+        /* Logs */
+        .console-log {
+            margin-top: 16px;
+            background: #0b1120;
+            border-radius: 6px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 0.75rem;
+            color: #4ade80;
+            min-height: 60px;
+            max-height: 120px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+
+<div class="auth-container">
+    <h1>КСХ "БИБА И БОБА"</h1>
+    <div class="auth-card">
+        <div class="tabs">
+            <button class="tab active" data-tab="login">Вход</button>
+            <button class="tab" data-tab="register">Регистрация заявки</button>
+        </div>
+
+        <div class="form-container">
+            <!-- LOGIN FORM -->
+            <form id="loginForm" class="form active">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" placeholder="user@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label>Пароль</label>
+                    <input type="password" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn">Войти</button>
+            </form>
+
+            <!-- REGISTER FORM -->
+            <form id="registerForm" class="form">
+                <div class="form-group">
+                    <label>Email пользователя</label>
+                    <input type="email" id="regEmail" placeholder="user@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label>Пароль</label>
+                    <input type="password" id="regPass" placeholder="Мин. 8 символов" minlength="8" required>
+                </div>
+                <div class="form-group">
+                    <label>Документы (для загрузки)</label>
+                    <input type="file" id="regDocs" multiple accept=".pdf,.jpg,.png">
+                </div>
+
+                <div class="app-preview">
+                    <h4>📦 Состояние объекта Application</h4>
+                    <div class="attr-row"><span class="attr-key">id</span> <span class="attr-val" id="preview-id">null</span></div>
+                    <div class="attr-row"><span class="attr-key">createdAt</span> <span class="attr-val" id="preview-created">null</span></div>
+                    <div class="attr-row">
+                        <span class="attr-key">status</span>
+                        <span id="preview-status" class="status-badge status-draft">DRAFT</span>
+                    </div>
+                    <div class="attr-row">
+                        <span class="attr-key">documentUrls</span>
+                        <span class="attr-val" id="preview-docs">[]</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn">Создать заявку</button>
+            </form>
+        </div>
+    </div>
+    <div class="console-log" id="consoleLog">// Ожидание действий...</div>
+</div>
+
+<script>
+    // ── Табы ──
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.form').forEach(f => f.classList.remove('active'));
+            tab.classList.add('active');
+            document.getElementById(tab.dataset.tab + 'Form').classList.add('active');
+            log(`[UI] Переключение на вкладку: ${tab.innerText}`);
+        });
+    });
+
+    // ── Утилиты ──
+    const log = (msg) => {
+        const el = document.getElementById('consoleLog');
+        const time = new Date().toLocaleTimeString();
+        el.innerText += `\n[${time}] ${msg}`;
+        el.scrollTop = el.scrollHeight;
+    };
+
+    const generateUUID = () => {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+            const r = Math.random() * 16 | 0;
+            return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+        });
+    };
+
+    // ── Application Class Simulation ──
+    class Application {
+        constructor() {
+            this.id = null;
+            this.createdAt = null;
+            this.status = 'DRAFT';
+            this.documentUrls = [];
+        }
+
+        validate(email, pass, files) {
+            log(`[Application.validate()] Проверка данных...`);
+            let errors = [];
+            if (!email.includes('@')) errors.push('Некорректный Email');
+            if (pass.length < 8) errors.push('Пароль слишком короткий');
+            if (files.length === 0) errors.push('Необходимо прикрепить хотя бы 1 документ');
+
+            if (errors.length > 0) {
+                this.status = 'ERROR';
+                errors.forEach(e => log(`❌ Ошибка: ${e}`));
+                return { valid: false, errors };
+            }
+
+            this.status = 'VALIDATED';
+            log(`✅ Валидация успешна. Статус: ${this.status}`);
+            return { valid: true };
+        }
+
+        updateStatus(newStatus) {
+            log(`[Application.updateStatus()] Изменение статуса: ${this.status} → ${newStatus}`);
+            this.status = newStatus;
+            this.renderPreview();
+        }
+
+        addFiles(files) {
+            this.documentUrls = Array.from(files).map(f => URL.createObjectURL(f));
+            this.renderPreview();
+        }
+
+        renderPreview() {
+            document.getElementById('preview-id').textContent = this.id || 'null';
+            document.getElementById('preview-created').textContent = this.createdAt || 'null';
+            document.getElementById('preview-docs').textContent = JSON.stringify(this.documentUrls.slice(0, 2)) + (this.documentUrls.length > 2 ? ` (+${this.documentUrls.length-2})` : '');
+
+            const statusEl = document.getElementById('preview-status');
+            statusEl.textContent = this.status;
+            statusEl.className = 'status-badge';
+            if(this.status === 'DRAFT') statusEl.classList.add('status-draft');
+            else if(this.status === 'VALIDATING') statusEl.classList.add('status-validating');
+            else if(this.status === 'PENDING') statusEl.classList.add('status-pending');
+            else if(this.status === 'ERROR') statusEl.classList.add('status-error');
+        }
+    }
+
+    // ── Инициализация ──
+    const app = new Application();
+    app.renderPreview();
+
+    // Отслеживание файлов
+    document.getElementById('regDocs').addEventListener('change', (e) => {
+        app.addFiles(e.target.files);
+    });
+
+    // ── Submit Logic ──
+    document.getElementById('loginForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        log('[LoginForm] Попытка входа...');
+        setTimeout(() => log('✅ Авторизация успешна (симуляция)'), 800);
+    });
+
+    document.getElementById('registerForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = document.getElementById('regEmail').value;
+        const pass = document.getElementById('regPass').value;
+        const files = document.getElementById('regDocs').files;
+
+        // 1. Validate
+        const validation = app.validate(email, pass, files);
+        if (!validation.valid) {
+            app.updateStatus('ERROR');
+            return;
+        }
+
+        // 2. Fill Attributes
+        app.id = generateUUID();
+        app.createdAt = new Date().toISOString();
+        app.renderPreview();
+
+        // 3. Update Status (simulate async submission)
+        app.updateStatus('VALIDATING');
+        log('📤 Отправка заявки на сервер...');
+
+        setTimeout(() => {
+            app.updateStatus('PENDING');
+            log('🎉 Заявка успешно создана! Ожидает рассмотрения.');
+        }, 1500);
+    });
+</script>
+
+</body>
+</html>
